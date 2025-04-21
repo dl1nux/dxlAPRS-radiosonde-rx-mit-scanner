@@ -2,6 +2,8 @@
 Wettersonden-Empfänger mit dxlAPRS und Scanner von DO2JMG
 
 Stand 21.04.2025
+!!! ACHTUNG - NOCH UNGETESTETE SKRIPTE !!! KÖNNEN NOCH FEHLER ENTHALTEN !!!
+
 
 # Inhaltsverzeichnis
 * Einleitung
@@ -287,6 +289,62 @@ idealerweise das Verzeichnis  /home/pi/dxlAPRS/aprs . Alle weiteren Anweisungen
 setzen voraus dass man sich in diesem Programmordner befindet. Bei Abweichungen
 bitte entsprechend anpassen.
 
+# Hinweise zur Nutzung mit dem dxlAPRS-Scanner von DO2JMG
+
+Zunächst muss auf dem System der Scanner kompiliert werden. Falls das Kompilier-
+Programm "cmake" noch nicht auf dem System installiert ist, muss dieses zunächst
+installiert werden:
+
+    sudo apt install cmake
+
+Anschließend geht man in das dxlAPRS-Verzeichnis (i.d.R. /home/pi/dxlAPRS/aprs/)
+und kompiliert sich den Scanner wie folgt:
+
+    cd /home/pi/dxlAPRS/aprs/         (ggf. anpassen!!)
+    git clone https://github.com/DO2JMG/dxlAPRS_Scanner.git
+    cd dxlAPRS_Scanner
+    mkdir build
+    cd build
+    cmake ..
+    make
+
+Anschließend befindet sich im Ordner dxlAPRS_Scanner die Datei "scanner". Dies
+ist das binäre Scanner-Programm und *MUSS* nun in den dxlAPRS Programmordner
+kopiert werden:
+
+    cp scanner /home/pi/dxlAPRS/aprs/            (Zielpfad ggf. anpassen!!)
+
+Die Datei sollte sich dann in dem gleichen Ordner befinden wie sdrtst, udpgate4
+und alle anderen dxlAPRS Programme.
+
+Was ist bei der Nutzung des dxlAPRS-Scanners anders als bei den alten Skripten?
+* Der RX-Gain und die Abweichung in PPM sind nicht mehr in der sdrcfgX definiert, 
+sondern im Skript selber beim Programm "rtl_tcp". Hier entspricht der Parameter 
+-P der PPM Abweichung bei einfachen SDR-Sticks, und der Parameter -G dem RX-Gain.
+Der Wert 0 sieht eine Automatik vor. Wer den Gain manuell angeben will, gibt dort
+den entsprechenden Gain-Wert an, z.B. -G 30 für 30 dB Gain. Die Angabe muss für 
+jeden Stick wiederholt werden.
+* Der Scanbereich wird an zwei Stellen angegeben. Zum einen im Startskript beim
+Scanner selbst. Hier wird mit dem Parameter -f die Startfrequenz in Hertz 
+angegeben. Der Wert muss passen zur Angabe des Frequenzbereichs in der 
+sdrcfgX.txt beim jeweiligen Stick:  s 402.000 404.000 1500 6 3000
+In dieser Datei befindet sich der zu scannende Frequenzbereich, hier 402-404 MHz.
+* Sollen Frequenzen dauerhaft überwacht werden, kann man diese in die Whitelist 
+eintragen, z.B. je Zeile: 405700,6,5  (Frequenz in KHz, Bandbreite in KHz und AFC Wert)
+* Sollen Frequenzen ignoriert werden, sind diese in die blacklist.txt einzutragen.
+Je Zeile eine Frequenz in KHz, z.B.:  403200
+* Die Dateien whitelist.txt und blacklist.txt müssen nur einmal definiert werden,
+auch wenn man mehrere Sticks verwendet. Der jewilige Scannerprozess berücksichtigt nur
+die Frequenzen, die zu dem Scanbereich passen.
+* Die Datei sdrcfgX.txt muss nicht mehr angepasst werden. Der Scanner fügt hier 
+automatisch alle Frequenzen aus der Whitelist sowie die per Scan gefundenen 
+Frequenzen ein. Diese Datei(en) verändern sich dynamisch und sollten nur angepasst
+werden, wenn man was am Scanbereich ändern möchte.
+* Falls man andere Scanbereiche pro Stick nutzen möchte als vorgesehen
+(Stick 0 = 402-404 MHz, Stick 1 = 404-406 MHz und Stick 2 ist 400-402 MHz)
+muss man dies sowohl in Startskript unter "scanner" anpassen sowie in der 
+jeweiligen sdrcfgX.txt.
+
 # Vor dem ersten Start beachten
 
 Wenn alle Pakete und Programmdateien installiert sind und sich die Skript- 
@@ -350,7 +408,6 @@ Wenn man eine grafische Oberfläche hat, kann man die Skriptdateien auch direkt
 aus einem Dateimanager heraus mit Doppelklick starten.
 
 # Autostart
-
 Möchte man den Sondenempfänger automatisch direkt nach dem Hochfahren des 
 Rechners starten, gibt es folgende Möglichkeiten.
 

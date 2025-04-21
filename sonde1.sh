@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/sh
 #sleep 10
 # Wettersonden-Empfänger mit Weiterleitung zu radiosondy.info und wettersonde.net
 #----------------------------------------------------------------------------------------------------
@@ -16,17 +16,17 @@ export DXLPATH=$(dirname `realpath $0`)
 export PATH=$DXLPATH:$PATH
 
 # Variablen aus Datei sondeconfig.txt einlesen
-while read line; do    
-    export $line    
+while read line; do
+    export $line
 done < $DXLPATH/sondeconfig.txt
 
 # Wir beenden sicherheitshalber alle Prozesse die bereits laufen könnten
-killall -9 getalmd rtl_tcp sdrtst sondeudp sondemod udpbox udpgate4 
+killall -9 getalmd rtl_tcp sdrtst sondeudp sondemod udpbox udpgate4 scanner
 sleep 1
 
 # getalmd lädt den aktuellen GPS Almanach (wird für RS92 Sonden benötigt).
-getalmd &
-sleep 1
+#getalmd &
+#sleep 1
 
 # Audiopipes erstellen (falls nicht vorhanden)
 # Stick 0
@@ -36,21 +36,25 @@ mknod $DXLPATH/sondepipe0 p 2> /dev/null
 mkdir $DXLPATH/srtm1 2> /dev/null
 sleep 1
 
+# Scanner starten
+#Stick 0
+scanner -p 18050 -u 17050 -f 402000000 -s 1500 -v -o $DXLPATH/sdrcfg0.txt -b blacklist.txt -w whitelist.txt -q 55 -n 5 &
+
 # Starten der SDR Server (RTL_TCP)
 # Die einzelnen Sticks sind durchnummeriert mit -d0 / -d1 / -d2 usw.
 # Stick 0
-rtl_tcp -a 127.0.0.1 -d0 -p 18200 -n 1 &
+rtl_tcp -a 127.0.0.1 -d0 -p 18200 -P 0 -G 0 -n 1 &
 sleep 1
 
 # Initialisieren der Empfänger (SDRTST)
 # Die Dateien sdrcfgX.txt enthalten die zu empfangenden Sondenfrequenzen (bitte die Datei seperat betrachten und bearbeiten!)
 # Stick 0
-sdrtst -t 127.0.0.1:18200 -r 16000 -s $DXLPATH/sondepipe0 -Z 100 -c $DXLPATH/sdrcfg0.txt -e -k -v &
+sdrtst -t 127.0.0.1:18200 -r 26000 -s $DXLPATH/sondepipe0 -Z 100 -c $DXLPATH/sdrcfg0.txt -L 127.0.0.1:18050 -a 15 -e -k -v &
 sleep 1
 
 # Sondendekodierung starten (SONDEUDP)
 # Stick 0
-sondeudp -f 16000 -o $DXLPATH/sondepipe0 -I $SONDECALL -L SDR0 -u 127.0.0.1:18000 -c 0 -v -n 0 -W 5 & 
+sondeudp -f 26000 -o $DXLPATH/sondepipe0 -I $SONDECALL -L SDR0 -u 127.0.0.1:18000 -M 127.0.0.1:17050 -c 0 -v -n 0 -W 5 & 
 sleep 1
 
 # Umwandeln der Sondendaten in AXUDP Format (SONDEMOD)
@@ -71,7 +75,7 @@ sleep 1
 # aprs.hc.r1.ampr.org:14580   => Daten direkt ins APRS-IS-Netzwerk via HAMNET
 
 # iGate für radiosondy.info
-udpgate4 -s $IGATECALL -R 127.0.0.1:0:9101 -B 2880 -u 50 -H 0 -I 0 -L 0 -A $DXLPATH/ -n 30:$DXLPATH/netbeacon_sonde.txt -g radiosondy.info:14580#m/1 -p $PASSCODE -w 14501 -v -D $DXLPATH/www/ &
+udpgate4 -s $IGATECALL -R 127.0.0.1:0:9101 -B 2880 -u 50 -H 0 -I 0 -A $DXLPATH/ -n 30:$DXLPATH/netbeacon_sonde.txt -g radiosondy.info:14580#m/1 -p $PASSCODE -w 14501 -v -D $DXLPATH/www/ &
 sleep 1
 # iGate für wettersonde.net
-udpgate4 -s $IGATECALL -R 127.0.0.1:0:9102 -B 2880 -u 50 -H 0 -I 0 -L 0 -A $DXLPATH/ -n 30:$DXLPATH/netbeacon_sonde.txt -g wettersonde.net:14580#m/1 -p $PASSCODE -w 14502 -v -D $DXLPATH/www/ &
+udpgate4 -s $IGATECALL -R 127.0.0.1:0:9102 -B 2880 -u 50 -H 0 -I 0 -A $DXLPATH/ -n 30:$DXLPATH/netbeacon_sonde.txt -g wettersonde.net:14580#m/1 -p $PASSCODE -w 14502 -v -D $DXLPATH/www/ &

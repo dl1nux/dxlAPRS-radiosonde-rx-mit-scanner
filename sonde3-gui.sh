@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/sh
 #sleep 10
 # Wettersonden-Empfänger mit Weiterleitung zu radiosondy.info und wettersonde.net
 #----------------------------------------------------------------------------------------------------
@@ -16,17 +16,17 @@ export DXLPATH=$(dirname `realpath $0`)
 export PATH=$DXLPATH:$PATH
 
 # Variablen aus Datei sondeconfig.txt einlesen
-while read line; do    
-    export $line    
+while read line; do
+    export $line
 done < $DXLPATH/sondeconfig.txt
 
 # Wir beenden sicherheitshalber alle Prozesse die bereits laufen könnten
-killall -9 getalmd rtl_tcp sdrtst sondeudp sondemod udpbox udpgate4 
+killall -9 getalmd rtl_tcp sdrtst sondeudp sondemod udpbox udpgate4 scanner
 sleep 1
 
 # getalmd lädt den aktuellen GPS Almanach (wird für RS92 Sonden benötigt).
-xfce4-terminal --title GETALMD -e getalmd &
-sleep 1
+#xfce4-terminal --title GETALMD -e getalmd &
+#sleep 1
 
 # Audiopipes erstellen (falls nicht vorhanden)
 # Stick 0
@@ -40,39 +40,47 @@ mknod $DXLPATH/sondepipe2 p 2> /dev/null
 mkdir $DXLPATH/srtm1 2> /dev/null
 sleep 1
 
+# Scanner starten
+#Stick 0
+xfce4-terminal --minimize --title SCANNER0 -e 'bash -c "scanner -p 18050 -u 17050 -f 402000000 -s 1500 -v -o $DXLPATH/sdrcfg0.txt -b blacklist.txt -w whitelist.txt -q 55 -n 5"' &
+#Stick 1
+xfce4-terminal --minimize --title SCANNER1 -e 'bash -c "scanner -p 18051 -u 17051 -f 404000000 -s 1500 -v -o $DXLPATH/sdrcfg1.txt -b blacklist.txt -w whitelist.txt -q 55 -n 5"' &
+#Stick 2
+xfce4-terminal --minimize --title SCANNER2 -e 'bash -c "scanner -p 18052 -u 17052 -f 400000000 -s 1500 -v -o $DXLPATH/sdrcfg2.txt -b blacklist.txt -w whitelist.txt -q 55 -n 5"' &
+
 # Starten der SDR Server (RTL_TCP)
 # Die einzelnen Sticks sind durchnummeriert mit -d0 / -d1 / -d2 usw.
 # Stick 0
-xfce4-terminal --minimize --title RTL_TCP0 -e 'bash -c "rtl_tcp -a 127.0.0.1 -d0 -p 18200 -n 1"' &
+xfce4-terminal --minimize --title RTL_TCP0 -e 'bash -c "rtl_tcp -a 127.0.0.1 -d0 -p 18200 -P 0 -G 0 -n 1"' &
 sleep 1
 # Stick 1
-xfce4-terminal --minimize --title RTL_TCP1 -e 'bash -c "rtl_tcp -a 127.0.0.1 -d1 -p 18201 -n 1"' &
+xfce4-terminal --minimize --title RTL_TCP1 -e 'bash -c "rtl_tcp -a 127.0.0.1 -d1 -p 18201 -P 0 -G 0 -n 1"' &
 sleep 1
 # Stick 2
-xfce4-terminal --minimize --title RTL_TCP2 -e 'bash -c "rtl_tcp -a 127.0.0.1 -d2 -p 18202 -n 1"' &
+xfce4-terminal --minimize --title RTL_TCP2 -e 'bash -c "rtl_tcp -a 127.0.0.1 -d2 -p 18202 -P 0 -G 0 -n 1"' &
 sleep 1
 
 # Initialisieren der Empfänger (SDRTST)
 # Die Dateien sdrcfgX.txt enthalten die zu empfangenden Sondenfrequenzen (bitte die Datei seperat betrachten und bearbeiten!)
 # Stick 0
-xfce4-terminal --minimize --title SDRTST0 -e 'bash -c "sdrtst -t 127.0.0.1:18200 -r 16000 -s $DXLPATH/sondepipe0 -Z 100 -c $DXLPATH/sdrcfg0.txt -e -k -v "'&
+xfce4-terminal --minimize --title SDRTST0 -e 'bash -c "sdrtst -t 127.0.0.1:18200 -r 26000 -s $DXLPATH/sondepipe0 -Z 100 -c $DXLPATH/sdrcfg0.txt -L 127.0.0.1:18050 -a 15 -e -k -v "'&
 sleep 1
 # Stick 1
-xfce4-terminal --minimize --title SDRTST1 -e 'bash -c "sdrtst -t 127.0.0.1:18201 -r 16000 -s $DXLPATH/sondepipe1 -Z 100 -c $DXLPATH/sdrcfg1.txt -e -k -v "'&
+xfce4-terminal --minimize --title SDRTST1 -e 'bash -c "sdrtst -t 127.0.0.1:18201 -r 26000 -s $DXLPATH/sondepipe1 -Z 100 -c $DXLPATH/sdrcfg1.txt -L 127.0.0.1:18051 -a 15 -e -k -v "'&
 sleep 1
 # Stick 2
-xfce4-terminal --minimize --title SDRTST2 -e 'bash -c "sdrtst -t 127.0.0.1:18202 -r 16000 -s $DXLPATH/sondepipe2 -Z 100 -c $DXLPATH/sdrcfg2.txt -e -k -v "'&
+xfce4-terminal --minimize --title SDRTST2 -e 'bash -c "sdrtst -t 127.0.0.1:18202 -r 26000 -s $DXLPATH/sondepipe2 -Z 100 -c $DXLPATH/sdrcfg2.txt -L 127.0.0.1:18052 -a 15 -e -k -v "'&
 sleep 1
 
 # Sondendekodierung starten (SONDEUDP)
 # Stick 0
-xfce4-terminal --title SONDEUDP0 -e 'bash -c "sondeudp -f 16000 -o $DXLPATH/sondepipe0 -I $SONDECALL -L SDR0 -u 127.0.0.1:18000 -c 0 -v -n 0 -W 5"' & 
+xfce4-terminal --title SONDEUDP0 -e 'bash -c "sondeudp -f 26000 -o $DXLPATH/sondepipe0 -I $SONDECALL -L SDR0 -u 127.0.0.1:18000 -M 127.0.0.1:17050 -c 0 -v -n 0 -W 5"' & 
 sleep 1
 # Stick 1
-xfce4-terminal --title SONDEUDP1 -e 'bash -c "sondeudp -f 16000 -o $DXLPATH/sondepipe1 -I $SONDECALL -L SDR1 -u 127.0.0.1:18000 -c 0 -v -n 0 -W 5"' &
+xfce4-terminal --title SONDEUDP1 -e 'bash -c "sondeudp -f 26000 -o $DXLPATH/sondepipe1 -I $SONDECALL -L SDR1 -u 127.0.0.1:18000 -M 127.0.0.1:17051 -c 0 -v -n 0 -W 5"' &
 sleep 1
 # Stick 2
-xfce4-terminal --title SONDEUDP2 -e 'bash -c "sondeudp -f 16000 -o $DXLPATH/sondepipe2 -I $SONDECALL -L SDR2 -u 127.0.0.1:18000 -c 0 -v -n 0 -W 5"' &
+xfce4-terminal --title SONDEUDP2 -e 'bash -c "sondeudp -f 26000 -o $DXLPATH/sondepipe2 -I $SONDECALL -L SDR2 -u 127.0.0.1:18000 -M 127.0.0.1:17052 -c 0 -v -n 0 -W 5"' &
 sleep 1
 
 # Umwandeln der Sondendaten in AXUDP Format (SONDEMOD)
@@ -93,7 +101,7 @@ sleep 1
 # aprs.hc.r1.ampr.org:14580   => Daten direkt ins APRS-IS-Netzwerk via HAMNET
 
 # iGate für radiosondy.info
-xfce4-terminal --minimize --title UDPGATE4_Radiosondy -e 'bash -c "udpgate4 -s $IGATECALL -R 127.0.0.1:0:9101 -B 2880 -u 50 -H 0 -I 0 -L 0 -A $DXLPATH/ -n 30:$DXLPATH/netbeacon_sonde.txt -g radiosondy.info:14580#m/1 -p $PASSCODE -w 14501 -v -D $DXLPATH/www/"' &
+xfce4-terminal --minimize --title UDPGATE4_Radiosondy -e 'bash -c "udpgate4 -s $IGATECALL -R 127.0.0.1:0:9101 -B 2880 -u 50 -H 0 -I 0 -A $DXLPATH/ -n 30:$DXLPATH/netbeacon_sonde.txt -g radiosondy.info:14580#m/1 -p $PASSCODE -w 14501 -v -D $DXLPATH/www/"' &
 sleep 1
 # iGate für wettersonde.net
-xfce4-terminal --minimize --title UDPGATE4-Wettersonde -e 'bash -c "udpgate4 -s $IGATECALL -R 127.0.0.1:0:9102 -B 2880 -u 50 -H 0 -I 0 -L 0 -A $DXLPATH/ -n 30:$DXLPATH/netbeacon_sonde.txt -g wettersonde.net:14580#m/1 -p $PASSCODE -w 14502 -v -D $DXLPATH/www/"' &
+xfce4-terminal --minimize --title UDPGATE4-Wettersonde -e 'bash -c "udpgate4 -s $IGATECALL -R 127.0.0.1:0:9102 -B 2880 -u 50 -H 0 -I 0 -A $DXLPATH/ -n 30:$DXLPATH/netbeacon_sonde.txt -g wettersonde.net:14580#m/1 -p $PASSCODE -w 14502 -v -D $DXLPATH/www/"' &

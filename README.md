@@ -1,7 +1,7 @@
 # dxlAPRS-radiosonde-rx
-Wettersonden-Empfänger mit dxlAPRS
+Wettersonden-Empfänger mit dxlAPRS und Scanner von DO2JMG
 
-Stand 20.02.2022
+Stand 21.04.2025
 
 # Inhaltsverzeichnis
 * Einleitung
@@ -20,10 +20,16 @@ Stand 20.02.2022
 # Einleitung
 
 Die folgende Anleitung dient dazu in wenigen Schritten einen Wettersonden-
-Empfänger aufzubauen, der seine Daten an die Community-Seite radiosondy.info,
-zu wettersonde.net und auch in das APRS-Netzwerk weiterleitet. 
-Selbstverständlich kann man den Empfänger auch nur lokal nutzen ohne eine 
-Weiterleitung der Daten.
+Empfänger aufzubauen, der seine Daten an die Community-Seite radiosondy.info und
+zu wettersonde.net weiterleitet. Selbstverständlich kann man den Empfänger auch
+nur lokal nutzen ohne eine Weiterleitung der Daten.
+
+Diese Variante der Skripte beinhaltet die Verwendung des automatischen Scanners
+von DO2JMG, https://github.com/DO2JMG/dxlAPRS_Scanner. Der Scanner muss gemäß
+der dort hinterlegten Installationsanleitung zunächst auf dem System kompiliert
+werden. Die damit erzeugte Datei "scanner" *MUSS* in das dxlAPRS Programm-
+verzeichnis kopiert werden, z.B. /home/pi/dxlAPRS/aprs/, damit die Skripte den
+Scanner finden können. Weitere Hinweise zum dxlAPRS-Scanner siehe weiter unten.
 
 dxlAPRS ist eine „Toolchain“ bzw. Programmsammlung für Linux Systeme rund um
 die Betriebsart APRS und wird von Christian OE5DXL entwickelt. Neben
@@ -101,19 +107,8 @@ dxlAPRS Tools können selbst nicht automatisch das Frequenzspektrum abscannen um
 neue Frequenzen zu finden. Insbesondere ist dies bei DFM Sonden ein Problem, da
 deren Frequenzen immer anders sind und auch nicht vorhergesagt werden können.
 Die dxlAPRS Tools sind in der Lage die Signale dieser Sonden zu dekodieren,
-jedoch nur wenn man die Frequenzen händisch einpflegt.
-
-Von Wolfgang Hallmann DF7PN gibt es eine Anwendung, mit der man an einem extra
-Stick die Frequenzen regelmäßig abscannen kann um damit Sonden auf unbekannten
-Frequenzen zu finden. Mit etwas Geschick und viel Wissen kann man den 
-die vorliegenden Scripte auch mit dem Sondenscanner ergänzen.
-Weitere Infos: https://github.com/whallmann/SondenUtils
-
-Für den Empfang von Sonden des Typs M10 sind Änderungen an der Konfiguration
-notwendig. Die Samplerate bei sdrtst und sondeudp muss dann mindestens 20000 Hz
-auf dem Stick betragen, wo M10 Sonden gehört werden. Dies erhöht allerdings
-proportional die CPU Last. Deswegen sollte es auch wirklich nur dann geändert
-werden, wenn wirklich M10 Sonden in Reichweite sind.
+jedoch nur wenn man die Frequenzen händisch einpflegt. Der dxlAPRS-Scanner von
+DO2JMG unterstützt euch dabei.
 
 # Benötigte Hardware
 
@@ -134,8 +129,9 @@ oder auch so ziemlich jeder Einplatinenrechner (RaspberryPi, BananPi, OrangePi
 etc.) mit Linux Betriebssystem verwendet werden. Die dxlAPRS Tools stehen für
 folgende PC Architekturen zu Verfügung:
 
-* armv6 (z.B. RaspberryPi 1. Generation und Zero)
-* armv7hf (ab RaspberryPi 2 aufwärts)
+* armv6 (z.B. RaspberryPi 1. Generation und Zero mit 32 Bit Betriebssystem)
+* armv7hf (ab RaspberryPi 2 aufwärts mit 32 Bit Betriebssystem)
+* aarch64 ((ab RaspberryPi 3 aufwärts mit 64 Bit Betriebssystem))
 * x86_32 (z.B. Intel/AMD PC 32 bit)
 * x86_64 (z.B. Intel/AMD PC 64 bit)
 
@@ -156,9 +152,9 @@ Filter und Vorverstärker im internet.
 # Funktionsweise der vorliegenden Skripte
 
 Die Skripte empfangen und dekodieren die Daten der Wettersonden. Daraus werden
-APRS-Pakete (APRS-Objekte) erzeugt. Diese APRS Pakete werden dann an den APRS- 
-Server von radiosondy.info gesendet. Zusätzlich können die Daten noch mit 
-APRSMAP auf einer Karte dargestellt werden.
+APRS-Pakete (APRS-Objekte) erzeugt. Diese APRS Pakete werden dann an die APRS- 
+Server von radiosondy.info und wettersonde.net gesendet. Zusätzlich können die 
+Daten noch mit APRSMAP auf einer Karte dargestellt werden.
 
 Die meisten Parameter müssen in der Datei sondeconfig.txt eingetragen werden.
 Diese Datei wird von jedem Skript zu Beginn eingelesen und die enthaltenen
@@ -191,7 +187,7 @@ auch bei Bedarf in den Startskripten händisch anpassen (-B beim udpgate4).
 1. dxlAPRS installieren
 
 Installiert die dxlAPRS Tools gemäß folgender Anleitung:
-http://dxlwiki.dl1nux.de/index.php?title=Installationsanleitung
+https://dxlwiki.dl1nux.de/index.php?title=Installationsanleitung
 
 Führt anschließend noch ein Update mit dem Updateskript dxl-update.sh durch.
 Siehe auch: https://github.com/dl1nux/dxlAPRS-update
@@ -208,7 +204,7 @@ Ausgaben der einzelnen Tools und hilft auch oft bei der Fehlersuche ;-)
 
     sudo apt install xfce4-terminal
 
-3. Bei Bedarf: Zugriffsberechtigungen anpassen
+3. Zugriffsberechtigungen anpassen
 
 In den meisten Linux-Distributionen können Standard-User nicht ohne Weiteres 
 den USB SDR-Stick ansprechen, sondern benötigen Root-Rechte. Weil dies zu 
@@ -218,16 +214,17 @@ zu können:
 
     sudo nano /etc/udev/rules.d/20.rtlsdr.rules
 
-Dort fügen wir folgende Zeile ein und speichern diese mit STRG+O:
+Dort fügen wir folgende Zeilen ein und speichern diese mit STRG+O:
 
     SUBSYSTEM=="usb", ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="2838",GROUP="adm", MODE="0666", SYMLINK+="rtl_sdr"
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="2832",GROUP="adm", MODE="0666", SYMLINK+="rtl_sdr"
 
 4. Beispielskript und -dateien herunterladen und ggf. in den APRS Ordner kopieren
 
 4.1. Download der Dateien von github in den Ordner ~/dxlAPRS/aprs:
 
 	  cd ~/dxlAPRS/aprs/
-      git clone https://github.com/dl1nux/dxlAPRS-radiosonde-rx.git
+      git clone https://github.com/dl1nux/dxlAPRS-radiosonde-rx-mit-scanner.git
 	
 Die Dateien landen nun im Unterordner /dxlAPRS-radiosonde-rx des APRS Ordners.
 
@@ -314,10 +311,6 @@ folgenden Schritte bzw. Anpassungen vorgenommen werden:
 Beim Vorhandensein von SRTM Daten in ~/dxlAPRS/aprs/srtm1/ werden bei den 
 Parametern ALT* jeweils die Höhen über Grund zugrundegelegt.
 
-**Hinweis:** iGate Rufzeichen und Absenderrufzeichen müssen identisch sein, jedoch
-muss sich die SSID der beiden Calls unterscheiden. Also z.B. NOCALL-10 und
-NOCALL-11. Dies ist Voraussetzung für die Einspeisung bei wettersonde.net
-
 2. netbeacon_sonde.txt
 
 Die netbeacon_sonde.txt enthält die Koordinaten und den Kommentartext für die APRS-
@@ -328,12 +321,13 @@ wettersonde.net
 
 3. sdrcfg0.txt / sdrcfg1.txt / sdrcfg2.txt
 
-Diese Dateien enthalten SDR Parameter und die Sondenfrequenzen, die überwacht
-werden sollen. Für jeden SDR-Stick muss eine eigene sdrcfg Datei verwendet 
-werden, weshalb diese durchnummeriert sind. Wird nur ein Stick verwendet, muss
-die Datei sdrcfg0.txt bearbeitet werden. Bei zwei Sticks die 0 und die 1 und 
-bei drei Sticks alle drei. Möchte man hier manuell eingreifen, sind Änderungen
-im Startskript beim Punkt **sdrtst** durchzuführen.
+Diese Dateien enthalten später die Sondenfrequenzen, die vom Scanner 
+automatisch eingetragen und von der Software überwacht werden sollen. Für jeden
+SDR-Stick muss eine eigene sdrcfg Datei verwendet werden, weshalb diese 
+durchnummeriert sind. Wird nur ein Stick verwendet, muss die Datei sdrcfg0.txt 
+bearbeitet werden. Bei zwei Sticks die 0 und die 1 und bei drei Sticks alle 
+drei. Möchte man hier manuell eingreifen, sind Änderungen im Startskript beim 
+Punkt **sdrtst** durchzuführen.
 
 4. Optional: sondecom.txt
 
@@ -399,6 +393,12 @@ im Menü "Ansicht" aktiviert werden, damit man den Ordner ~/.config sieht.
 
 ===========================================================================
 
+Update 21.04.2025
+* Umbau auf Scannerbetrieb mit dem dxlAPRS Scanner von DO2JMG
+* Entfallenen Parameter -L bei udpgate 4 entfernt
+* GETALMD ausgebaut da Server nicht erreichbar. Kann bei Bedarf wieder aktiviert werden.
+* Seperates repository erstellt
+
 Update 20.02.2022
 * wettersonde.net wieder eingebaut da wieder online.
 * Programmpfad wird nun automatisch ermittelt und in den Systempfad eingetragen
@@ -459,9 +459,9 @@ Kontaktmöglichkeiten:
 
 Die ausführliche Anleitung mit einer Erklärung aller Parameter befindet sich im
 Internet auf meiner Webseite:
-http://www.dl1nux.de/wettersonden-rx-mit-dxlaprs/
+https://www.dl1nux.de/wettersonden-rx-mit-dxlaprs/
 
 Support und Infos: 
-* dxl-Wiki: http://dxlwiki.dl1nux.de
+* dxl-Wiki: https://dxlwiki.dl1nux.de
 * Telegramm Community: https://t.me/joinchat/CRNMIBpKRcfQEBTPKLS0zg
 * YouTube Video-Tutorials von DL1NUX: https://www.youtube.com/channel/UCRm7ulWMMXAK0PpviOO0xOg

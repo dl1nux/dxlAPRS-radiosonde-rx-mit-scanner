@@ -43,7 +43,7 @@ xfce4-terminal --minimize --title SCANNER0 -e 'bash -c "scanner -p 18050 -u 1705
 # Starten der SDR Server (RTL_TCP)
 # Die einzelnen Sticks sind durchnummeriert mit -d0 / -d1 / -d2 usw.
 # Stick 0
-xfce4-terminal --minimize --title RTL_TCP0 -e 'bash -c "rtl_tcp -a 127.0.0.1 -d0 -p 18200 -P 0 -G 0 -n 1"' &
+xfce4-terminal --minimize --title RTL_TCP0 -e 'bash -c "rtl_tcp -a 127.0.0.1 -d0 -p 18200 -P 0 -g 0 -n 1"' &
 sleep 1
 
 # Initialisieren der Empfänger (SDRTST)

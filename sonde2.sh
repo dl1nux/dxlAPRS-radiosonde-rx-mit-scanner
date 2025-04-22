@@ -47,10 +47,10 @@ scanner -p 18051 -u 17051 -f 404000000 -s 1500 -v -o $DXLPATH/sdrcfg1.txt -b bla
 # Starten der SDR Server (RTL_TCP)
 # Die einzelnen Sticks sind durchnummeriert mit -d0 / -d1 / -d2 usw.
 # Stick 0
-rtl_tcp -a 127.0.0.1 -d0 -p 18200 -P 0 -G 0 -n 1 &
+rtl_tcp -a 127.0.0.1 -d0 -p 18200 -P 0 -g 0 -n 1 &
 sleep 1
 # Stick 1
-rtl_tcp -a 127.0.0.1 -d1 -p 18201 -P 0 -G 0 -n 1 &
+rtl_tcp -a 127.0.0.1 -d1 -p 18201 -P 0 -g 0 -n 1 &
 sleep 1
 
 # Initialisieren der Empfänger (SDRTST)

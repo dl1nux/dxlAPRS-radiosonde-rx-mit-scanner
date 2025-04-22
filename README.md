@@ -1,7 +1,7 @@
 # dxlAPRS-radiosonde-rx
 Wettersonden-Empfänger mit dxlAPRS und Scanner von DO2JMG
 
-Stand 21.04.2025
+Stand 22.04.2025
 !!! ACHTUNG - NOCH UNGETESTETE SKRIPTE !!! KÖNNEN NOCH FEHLER ENTHALTEN !!!
 
 
@@ -320,9 +320,9 @@ und alle anderen dxlAPRS Programme.
 Was ist bei der Nutzung des dxlAPRS-Scanners anders als bei den alten Skripten?
 * Der RX-Gain und die Abweichung in PPM sind nicht mehr in der sdrcfgX definiert, 
 sondern im Skript selber beim Programm "rtl_tcp". Hier entspricht der Parameter 
--P der PPM Abweichung bei einfachen SDR-Sticks, und der Parameter -G dem RX-Gain.
+-P der PPM Abweichung bei einfachen SDR-Sticks, und der Parameter -g dem RX-Gain.
 Der Wert 0 sieht eine Automatik vor. Wer den Gain manuell angeben will, gibt dort
-den entsprechenden Gain-Wert an, z.B. -G 30 für 30 dB Gain. Die Angabe muss für 
+den entsprechenden Gain-Wert an, z.B. -g 30 für 30 dB Gain. Die Angabe muss für 
 jeden Stick wiederholt werden.
 * Der Scanbereich wird an zwei Stellen angegeben. Zum einen im Startskript beim
 Scanner selbst. Hier wird mit dem Parameter -f die Startfrequenz in Hertz 

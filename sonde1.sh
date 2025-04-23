@@ -38,7 +38,7 @@ sleep 1
 
 # Scanner starten
 #Stick 0
-scanner -p 18050 -u 17050 -f 402000000 -s 1500 -v -o $DXLPATH/sdrcfg0.txt -b blacklist.txt -w whitelist.txt -q 55 -n 5 &
+scanner -p 18050 -u 17050 -f 402000000 -s 1500 -v -o $DXLPATH/sdrcfg0.txt -b $DXLPATH/blacklist.txt -w $DXLPATH/whitelist.txt -q 55 -n 5 &
 
 # Starten der SDR Server (RTL_TCP)
 # Die einzelnen Sticks sind durchnummeriert mit -d0 / -d1 / -d2 usw.

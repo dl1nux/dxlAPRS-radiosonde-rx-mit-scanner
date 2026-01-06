@@ -69,10 +69,7 @@ sleep 1
 # APRS iGate (UDPGATE4) - sendet die Daten im APRS Format an einen APRS Server (-g)
 #
 # radiosondy.info:14580       => Daten zu Radiosondy.info inklusive Weiterleitung an das APRS-IS-Netzwerk (Port 14580)
-# radiosondy.info:14590       => Daten zu Radiosondy.info OHNE Weiterleitung an das APRS-IS-Netzwerk (Port 14590)
 # wettersonde.net:14580       => Daten zu wettersonde.net
-# rotate.aprs2.net:14580      => Daten direkt ins APRS-IS-Netzwerk via INTERNET
-# aprs.hc.r1.ampr.org:14580   => Daten direkt ins APRS-IS-Netzwerk via HAMNET
 
 # iGate für radiosondy.info
 udpgate4 -s $IGATECALL -R 127.0.0.1:0:9101 -B 2880 -u 50 -H 0 -I 0 -A $DXLPATH/ -n 30:$DXLPATH/netbeacon_sonde.txt -g radiosondy.info:14580#m/1 -p $PASSCODE -w 14501 -v -D $DXLPATH/www/ &

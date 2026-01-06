@@ -396,7 +396,7 @@ Fehler wie folgt zu umgehen (erweiterte Linuxkenntnisse sind hierzu notwendig!):
 
 Dies dient nur als Beispiel, ich kann hier leider nicht alles bis ins kleinste 
 Detail beschreiben. Solange der Bug auftritt, muss man sich also behelfen.
-Eventuell geht es auch auf anderem Wege einfacher und besser - möglich. FÜr mich
+Eventuell geht es auch auf anderem Wege einfacher und besser - möglich. Für mich
 persönlich funtioniert diese Vorgehensweise aber gut, da ich nicht täglich nach
 dem Rechten sehen möchte.
 

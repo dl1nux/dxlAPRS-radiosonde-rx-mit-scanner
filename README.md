@@ -1,8 +1,10 @@
 # dxlAPRS-radiosonde-rx
 Wettersonden-Empfänger mit dxlAPRS und Scanner von DO2JMG
 
-Stand 22.04.2025
-!!! ACHTUNG - NOCH UNGETESTETE SKRIPTE !!! KÖNNEN NOCH FEHLER ENTHALTEN !!!
+Stand 06.01.2026
+
+Für den Betrieb mit dem Scanner von DO2JMG sind wichtige Hinweise zu beachten 
+-> Siehe weiter unten im Kapitel "Hinweise zur Nutzung mit dem dxlAPRS-Scanner von DO2JMG"
 
 
 # Inhaltsverzeichnis
@@ -29,9 +31,11 @@ nur lokal nutzen ohne eine Weiterleitung der Daten.
 Diese Variante der Skripte beinhaltet die Verwendung des automatischen Scanners
 von DO2JMG, https://github.com/DO2JMG/dxlAPRS_Scanner. Der Scanner muss gemäß
 der dort hinterlegten Installationsanleitung zunächst auf dem System kompiliert
-werden. Die damit erzeugte Datei "scanner" *MUSS* in das dxlAPRS Programm-
+werden und die erzeugte Datei "scanner" *MUSS* in das dxlAPRS Programm-
 verzeichnis kopiert werden, z.B. /home/pi/dxlAPRS/aprs/, damit die Skripte den
-Scanner finden können. Weitere Hinweise zum dxlAPRS-Scanner siehe weiter unten.
+Scanner finden können. Das Kompilieren und Kopieren des Scanners ist bei 
+Verwendung des fertigen dxlAPRS Images von DL1NUX nicht notwendig. Weitere
+!! Hinweise zum dxlAPRS-Scanner siehe weiter unten !!
 
 dxlAPRS ist eine „Toolchain“ bzw. Programmsammlung für Linux Systeme rund um
 die Betriebsart APRS und wird von Christian OE5DXL entwickelt. Neben
@@ -175,10 +179,12 @@ aller Prozesse gedacht (sondestop.sh).
 Wenn der Empfänger läuft, kann man das Webinterface des iGates einfach
 im Browser über den Port 14501 aufrufen, z.B.:
 
-    http://192.168.178.66:14501/mh
+    http://<IP-Adresse-des-RaspberryPis>:14501/mh
 
 Natürlich müsst ihr die passende IP-Adresse einsetzen, die euer RaspberryPi
-bzw. Rechner im Netzwerk hat.
+bzw. Rechner im Netzwerk hat. Erscheint nur eine Leere Seite beim Aufruf?
+Dann habt ihr vielleicht im Ordner /dxlAPRS/aprs/www/ die Datei index.html.
+Diese müsst ihr dann löschen.
 
 Im Webinterface sieht man dann nach einiger Zeit die Empfangenen Sonden mit all
 ihren Daten aus den letzten 48 Stunden. Die Zeitspanne der Anzeige lässt sich 
@@ -247,6 +253,7 @@ Das Archiv enthält folgende Dateien:
 * sondecom.txt - Enthält Parameter für den APRS-Kommentartext
 * sondeconfig.txt - Enthält die wichigen Variablen für die Konfiguration
 * sondestop.sh - Beendet sofort alle dxlAPRS Prozesse
+* WW15MGH.DAC - Geoid Höhen Datenfile
 
 4.2. Dateien verschieben oder kopieren
 
@@ -450,6 +457,10 @@ im Menü "Ansicht" aktiviert werden, damit man den Ordner ~/.config sieht.
 
 ===========================================================================
 
+Update 06.01.2026:
+* Geringfügige Text Anpassungen in den Skripten, README ergänzt.
+* Geoid Höhendatei WW15MGH.DAC hinzugefügt
+
 Update 21.04.2025
 * Umbau auf Scannerbetrieb mit dem dxlAPRS Scanner von DO2JMG
 * Entfallenen Parameter -L bei udpgate 4 entfernt
@@ -491,6 +502,23 @@ A:
 * Ansonsten das Skript einfach neu starten, damit werden alle Prozesse beendet
   und neu gestartet. Man kann auch manuell einfach nur die rtl_tcp und sdrtst 
   Prozesse neu starten, der Rest kann eigentlich weiterlaufen.
+
+F:
+Wenn ich das Webinterface aufrufe, sehe ich nur eine leere Seite
+A:
+Befindet sich im Ordner /dxlAPRS/aprs/www eine Datei namens "index.html"?
+Dann muss diese gelöscht werden. Die behindert den Aufruf des Webinterfaces.
+
+F:
+Das Webinterface lässt sich gar nicht aufrufen, es erscheint eine Fehlermeldung
+im Browser.
+A:
+Vermutlich läuft das iGate "udpgate4" nicht. Dies kann man mit "top" oder "htop"
+kontrollieren. Hier muss es einen Prozess "udpgate4" geben. Läuft er nicht, dann
+ist dies die Erklärung, warum das Webinterface nicht erreichbar ist.
+Zu Lösung des Problems bitte einmal das Skript manuell in der Konsole (z.B. per
+SSH) starten. udpgate4 bringt mit Sicherheit beim Start eine Fehlermeldung.
+Dieser muss man nachgehen.
 
 ===========================================================================
 

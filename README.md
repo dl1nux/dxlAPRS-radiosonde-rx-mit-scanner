@@ -355,28 +355,30 @@ jeweiligen sdrcfgX.txt.
 ## Bekannter Bug mit dem Scanner - bitte lesen ##
 
 Im längeren Testbetrieb bei DL1NUX und DB0NH ist folgender Bug aufgetreten:
-Der Scanner aktualisiert laufend die sdrcfg*.txt Frequenzdatei. Dort sind neben
-dem zu scannenden Frequenzbereich auch die Frequenzen aus der Whitelist und die
-durch den Scanner gefundenen Frequenzen aufgelistet. 
+Der Scanner aktualisiert laufend die sdrcfg*.txt Frequenzdatei(en). Dort sind 
+neben dem zu scannenden Frequenzbereich auch die Frequenzen aus der Whitelist 
+und die durch den Scanner gefundenen Frequenzen aufgelistet. 
 
 Nun kommt es manchmal vor, dass der Scanner oder irgendein anderer Prozess die
-sdrcfg*.txt Datei "zerstört. Diese ist daraufhin dann plötzlich leer. Der Scanner
-funktioniert dann nicht mehr. Im besten Falle merkt sich der Sondenempfänger die 
-zuletzt überwachten Frequenzen und monitort diese weiter, aber es werden keine
-neuen SOndenfrequenzen mehr gefunden und auch nicht gescannt. Abhilfe schafft 
-hier das Stoppen aller Prozesse und das Wiederherstellen der originalen 
-sdrcfg*.txt Datei.
+sdrcfg*.txt Datei *zerstört*. Diese ist daraufhin dann plötzlich leer und der 
+Scanner funktioniert dann nicht mehr. Im besten Falle merkt sich der 
+Sondenempfänger die zuletzt überwachten Frequenzen und monitort diese weiter, 
+aber es werden keine neuen Sondenfrequenzen mehr gefunden und auch nicht 
+gescannt. Abhilfe schafft hier beispielsweise das Stoppen aller Prozesse und 
+das Wiederherstellen der originalen sdrcfg*.txt Datei.
 
-Weil man dies nicht unbedingt merkt, bin ich dazu übergegangen diesen Fehler wie
-folgt zu umgehen (erweiterte Linuxkenntnisse sind hierzu notwendig!):
+Weil man dies nicht unbedingt gleich merkt, bin ich dazu übergegangen diesen 
+Fehler wie folgt zu umgehen (erweiterte Linuxkenntnisse sind hierzu notwendig!):
 
 * Die Original sdrcfg*.txt Datei(en) werden als "Originaldatei(en)" im Ordner
   seperat hinterlegt, z.B. als "sdrcfg0.original".
 * Beim Starten des Skriptes wird zunächst die Originaldatei auf den eigentlichen 
   Dateinamen kopiert, z.B. mit  
   cp /home/pi/dxlAPRS/aprs/sdrcfg0.original /home/pi/dxlAPRS/aprs/sdrcfg0.txt -f
+* Bei Nutzung mehrerer Sticks und mehrerer sdrcfg*.txt Dateien, muss dies für 
+  jede Datei erfolgen.
 * Erst danach starten alle weiteren Prozesse. sdrtst und scanner benutzen nun
-  die kopierte Datei zum arbeiten.
+  die kopierte Datei zum arbeiten, die Originale bleibt als Muster erhalten.
 * Nun muss man dafür sorgen, dass regelmäßig die Datei neu kopiert wird. Ich 
   mache das z.B. einmal täglich. So würde beim Auftreten des Fehlers zumindest
   einmal am Tag die Datei erneuert werden.
@@ -388,7 +390,7 @@ folgt zu umgehen (erweiterte Linuxkenntnisse sind hierzu notwendig!):
   Hier müssen dann einfach nochmal alle Zeilen von scanner und sdrtst aus eurem
   Startskript rein. Diese kann man einfach per Copy & Paste übernehmen.
   Alle anderen Prozesse können normal weiterlaufen.
-* Diese "reload"-Skript starten man dann einfach täglich über CROND, z.B. durch
+* Dieses "reload"-Skript startet man dann einfach täglich über CROND, z.B. durch
   einfügen in die /etc/crond
   0  0    * * *  pi /home/pi/dxlAPRS/aprs/relaod.sh
 
@@ -397,7 +399,6 @@ Detail beschreiben. Solange der Bug auftritt, muss man sich also behelfen.
 Eventuell geht es auch auf anderem Wege einfacher und besser - möglich. FÜr mich
 persönlich funtioniert diese Vorgehensweise aber gut, da ich nicht täglich nach
 dem Rechten sehen möchte.
-
 
 # Vor dem ersten Start beachten
 

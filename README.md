@@ -352,6 +352,53 @@ werden, wenn man was am Scanbereich ändern möchte.
 muss man dies sowohl in Startskript unter "scanner" anpassen sowie in der 
 jeweiligen sdrcfgX.txt.
 
+** Bekannter Bug mit dem Scanner - bitte lesen **
+
+Im längeren Testbetrieb bei DL1NUX und DB0NH ist folgender Bug aufgetreten:
+Der Scanner aktualisiert laufend die sdrcfg*.txt Frequenzdatei. Dort sind neben
+dem zu scannenden Frequenzbereich auch die Frequenzen aus der Whitelist und die
+durch den Scanner gefundenen Frequenzen aufgelistet. 
+
+Nun kommt es manchmal vor, dass der Scanner oder irgendein anderer Prozess die
+sdrcfg*.txt Datei "zerstört. Diese ist daraufhin dann plötzlich leer. Der Scanner
+funktioniert dann nicht mehr. Im besten Falle merkt sich der Sondenempfänger die 
+zuletzt überwachten Frequenzen und monitort diese weiter, aber es werden keine
+neuen SOndenfrequenzen mehr gefunden und auch nicht gescannt. Abhilfe schafft 
+hier das Stoppen aller Prozesse und das Wiederherstellen der originalen 
+sdrcfg*.txt Datei.
+
+Weil man dies nicht unbedingt merkt, bin ich dazu übergegangen diesen Fehler wie
+folgt zu umgehen (erweiterte Linuxkenntnisse sind hierzu notwendig!):
+
+* Die Original sdrcfg*.txt Datei(en) werden als "Originaldatei(en)" im Ordner
+  seperat hinterlegt, z.B. als "sdrcfg0.original".
+* Beim Starten des Skriptes wird zunächst die Originaldatei auf den eigentlichen 
+  Dateinamen kopiert, z.B. mit  
+  cp /home/pi/dxlAPRS/aprs/sdrcfg0.original /home/pi/dxlAPRS/aprs/sdrcfg0.txt -f
+* Erst danach starten alle weiteren Prozesse. sdrtst und scanner benutzen nun
+  die kopierte Datei zum arbeiten.
+* Nun muss man dafür sorgen, dass regelmäßig die Datei neu kopiert wird. Ich 
+  mache das z.B. einmal täglich. So würde beim Auftreten des Fehlers zumindest
+  einmal am Tag die Datei erneuert werden.
+* Diesen Prozess nimmt man am besten in eine extra Skriptdatei (z.B. reload.sh)
+  killall -9 sdrtst scanner (beendet alle noch laufenden Prozesse die auf die Datei zugreifen)
+  cp /home/pi/dxlAPRS/aprs/sdrcfg0.original /home/pi/dxlAPRS/aprs/sdrcfg0.txt -f
+  scanner -p ...
+  sdrtst -t ...
+  Hier müssen dann einfach nochmal alle Zeilen von scanner und sdrtst aus eurem
+  Startskript rein. Diese kann man einfach per Copy & Paste übernehmen.
+  Alle anderen Prozesse können normal weiterlaufen.
+* Diese "reload"-Skript starten man dann einfach täglich über CROND, z.B. durch
+  einfügen in die /etc/crond
+  0  0    * * *  pi /home/pi/dxlAPRS/aprs/relaod.sh
+
+Dies dient nur als Beispiel, ich kann hier leider nicht alles bis ins kleinste 
+Detail beschreiben. Solange der Bug auftritt, muss man sich also behelfen.
+Eventuell geht es auch auf anderem Wege einfacher und besser - möglich. FÜr mich
+persönlich funtioniert diese Vorgehensweise aber gut, da ich nicht täglich nach
+dem Rechten sehen möchte.
+
+
 # Vor dem ersten Start beachten
 
 Wenn alle Pakete und Programmdateien installiert sind und sich die Skript- 

@@ -352,7 +352,7 @@ werden, wenn man was am Scanbereich ändern möchte.
 muss man dies sowohl in Startskript unter "scanner" anpassen sowie in der 
 jeweiligen sdrcfgX.txt.
 
-** Bekannter Bug mit dem Scanner - bitte lesen **
+## Bekannter Bug mit dem Scanner - bitte lesen ##
 
 Im längeren Testbetrieb bei DL1NUX und DB0NH ist folgender Bug aufgetreten:
 Der Scanner aktualisiert laufend die sdrcfg*.txt Frequenzdatei. Dort sind neben

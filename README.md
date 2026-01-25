@@ -312,26 +312,29 @@ von Simon Schäfer verwendet: https://github.com/Eshco93/dxlAPRS-SHUE
 Kurzanleitung:
 
 1. Zunächst alle Systemupdates laden und einspielen
-* sudo apt update
-* sudo apt upgrade
+
+    sudo apt update    
+    sudo apt upgrade
 
 2. Python3 und benötigte Python Module installieren
-* sudo apt install python3   (ist in Raspberry Pi OS bereits vorinstalliert)
-* sudo apt install pip
-* python -m pip install crc
-* python -m pip install requests
+
+    sudo apt install python3   (ist in Raspberry Pi OS bereits vorinstalliert)
+    sudo apt install pip
+    python -m pip install crc
+    python -m pip install requests
 
 Falls die Installationen mit pip auf ein anzugebendes Python-Environment verweisen,
 können die zwei Module auch alternativ wie folgt installiert werden:
 
-* python -m pip install crc --break-system-packages
-* python -m pip install requests --break-system-packages
+    python -m pip install crc --break-system-packages
+    python -m pip install requests --break-system-packages
 
 3. dxlAPRS-SHUE installieren
 
 Ins dxlAPRS Programmverzeichnis wechseln - bzw. dorthin, wo die Startskripte liegen.
-* cd ~/dxlAPRS/aprs/  (hier ggf. eigenen PFad angeben)
-* git clone https://github.com/Eshco93/dxlAPRS-SHUE.git
+
+    cd ~/dxlAPRS/aprs/  (hier ggf. eigenen PFad angeben)
+    git clone https://github.com/Eshco93/dxlAPRS-SHUE.git
 
 4. Startskripte und Konfiguration anpassen
 
@@ -340,15 +343,16 @@ standardmäßig auskommentiert, da ich nicht davon ausgehen kann, dass jeder die
 Installationen des zuzsätzlichen Codes durchgeführt hat.
 
 In den Startskripten sonde?.sh ist daher vor folgender Zeile das "#" zu entfernen:
-    # python dxlAPRS-SHUE/dxlAPRS-SHUE.py -a 127.0.0.1 -p 18001 -k 0 -c $SONDECALL ...
+
+    python dxlAPRS-SHUE/dxlAPRS-SHUE.py -a 127.0.0.1 -p 18001 -k 0 -c $SONDECALL ...
 
 In der sondeconfig.txt sind zwingend folgende Parameter für Sondehub sinnvoll zu 
 belegen, da sonst keine Verbindung zu sondehub.org hergestellt werden kann:
 
-LAN=50.23333
-LON=11.00000
-HOEHE=0
-EMAIL=Mailaddresse-nur-für-Sondehub-eintragen
+    LAN=50.23333
+    LON=11.00000
+    HOEHE=0
+    EMAIL=Mailaddresse-nur-für-Sondehub-eintragen
 
 Die Koordinaten sind im Format WGS84 und Dezimalgrad (DD.DDDDD), also NICHT im
 APRS Format (DD MM.MM).

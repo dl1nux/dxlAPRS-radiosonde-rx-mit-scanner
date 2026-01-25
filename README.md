@@ -1,7 +1,7 @@
 # dxlAPRS-radiosonde-rx
 Wettersonden-Empfänger mit dxlAPRS und Scanner von DO2JMG
 
-Stand 06.01.2026
+Stand 25.01.2026
 
 Für den Betrieb mit dem Scanner von DO2JMG sind wichtige Hinweise zu beachten 
 -> Siehe weiter unten im Kapitel "Hinweise zur Nutzung mit dem dxlAPRS-Scanner von DO2JMG"
@@ -15,6 +15,7 @@ Für den Betrieb mit dem Scanner von DO2JMG sind wichtige Hinweise zu beachten
 * Benötigte Hardware
 * Funktionsweise der vorliegenden Skripte
 * Installationshinweise
+* Daten zusätzlich an sondehub.org senden
 * Vor dem ersten Start beachten
 * Programmstart
 * Autostart
@@ -27,6 +28,12 @@ Die folgende Anleitung dient dazu in wenigen Schritten einen Wettersonden-
 Empfänger aufzubauen, der seine Daten an die Community-Seite radiosondy.info und
 zu wettersonde.net weiterleitet. Selbstverständlich kann man den Empfänger auch
 nur lokal nutzen ohne eine Weiterleitung der Daten.
+
+Optional ist eine Weiterleitung der Daten auch an sondehub.org möglich. Hierzu
+sind aber weitere manuelle Angaben und Codeinstallationen notwendig. Bitte 
+hierzu den Abschnitt "Daten zusätzlich an sondehub.org senden" lesen. Eine
+Installation von weiterem Code ist nicht notwendig, wenn die fertigen Images
+von Attila DL1NUX verwendet werden.
 
 Diese Variante der Skripte beinhaltet die Verwendung des automatischen Scanners
 von DO2JMG, https://github.com/DO2JMG/dxlAPRS_Scanner. Der Scanner muss gemäß
@@ -296,6 +303,62 @@ idealerweise das Verzeichnis  /home/pi/dxlAPRS/aprs . Alle weiteren Anweisungen
 setzen voraus dass man sich in diesem Programmordner befindet. Bei Abweichungen
 bitte entsprechend anpassen.
 
+# Daten zusätzlich an sondehub.org senden
+
+Falls nur die Skripte und nicht das fertige Image verwendet werden, sind weitere
+Installationen notwendig. Zur Weiterleitung der Daten wird das Tool dxlAPRS-SHUE
+von Simon Schäfer verwendet: https://github.com/Eshco93/dxlAPRS-SHUE
+
+Kurzanleitung:
+
+1. Zunächst alle Systemupdates laden und einspielen
+* sudo apt update
+* sudo apt upgrade
+
+2. Python3 und benötigte Python Module installieren
+* sudo apt install python3   (ist in Raspberry Pi OS bereits vorinstalliert)
+* sudo apt install pip
+* python -m pip install crc
+* python -m pip install requests
+
+Falls die Installationen mit pip auf ein anzugebendes Python-Environment verweisen,
+können die zwei Module auch alternativ wie folgt installiert werden:
+
+* python -m pip install crc --break-system-packages
+* python -m pip install requests --break-system-packages
+
+3. dxlAPRS-SHUE installieren
+
+Ins dxlAPRS Programmverzeichnis wechseln - bzw. dorthin, wo die Startskripte liegen.
+* cd ~/dxlAPRS/aprs/  (hier ggf. eigenen PFad angeben)
+* git clone https://github.com/Eshco93/dxlAPRS-SHUE.git
+
+4. Startskripte und Konfiguration anpassen
+
+In den Startskripten ist der Start von dxlAPRS-SHUE bereits integriert, jedoch 
+standardmäßig auskommentiert, da ich nicht davon ausgehen kann, dass jeder die 
+Installationen des zuzsätzlichen Codes durchgeführt hat.
+
+In den Startskripten sonde?.sh ist daher vor folgender Zeile das "#" zu entfernen:
+> # python dxlAPRS-SHUE/dxlAPRS-SHUE.py -a 127.0.0.1 -p 18001 -k 0 -c $SONDECALL ...
+
+In der sondeconfig.txt sind zwingend folgende Parameter für Sondehub sinnvoll zu 
+belegen, da sonst keine Verbindung zu sondehub.org hergestellt werden kann:
+
+LAN=50.23333
+LON=11.00000
+HOEHE=0
+EMAIL=Mailaddresse-nur-für-Sondehub-eintragen
+
+Die Koordinaten sind im Format WGS84 und Dezimalgrad (DD.DDDDD), also NICHT im
+APRS Format (DD MM.MM).
+
+Sondehub benötigt eine seperate Angabe der Position und der Höhe des Empfängers
+zur Darstellung auf der Karte. Außerdem ist zwingend die Angabe einer validen
+E-Mail Adresse erforderlich, mit der der Betreiber des Empfängers bei Problemen
+kontaktiert werden kann. Die E-Mail Adresse sehen nur die Admins und wird nicht
+veröffentlicht.
+
 # Hinweise zur Nutzung mit dem dxlAPRS-Scanner von DO2JMG
 
 Zunächst muss auf dem System der Scanner kompiliert werden. Falls das Kompilier-
@@ -412,7 +475,9 @@ folgenden Schritte bzw. Anpassungen vorgenommen werden:
 * SONDECALL = Rufzeichen des Absenders der Sondenobjekte inkl. SSID, z.B. NOCALL-11
 * PASSCODE = APRS Passcode für das iGate-Rufzeichen, z.B. 12345
 * LOCATOR = Eigener QTH-Locator (10 stellig!), z.B. JO01AA23BB (nur für Entfernungsberechnung relevant)
-* HOEHE = Höhe des Empfängers in Meter über NN (nur für Elevationsberechnung relevant)
+* LAT=50.23333  (Optional: wird nur für sondehub.org benötigt)
+* LON=11.00000 (Optional: wird nur für sondehub.org benötigt)
+* HOEHE = Höhe des Empfängers in Meter über NN (für Elevationsberechnung und Sondehub relevant)
 * ALT1 = Höhenschwelle in Meter für kleinstes Sendeintervall, z.B. 3000
 * ALT2 = Höhenschwelle in Meter für zweites Sendeintervall, z.B. 2000
 * ALT3 = Höhenschwelle in Meter für drittes Sendeintervall, z.B. 1000
@@ -420,6 +485,7 @@ folgenden Schritte bzw. Anpassungen vorgenommen werden:
 * INTERVALL1 = Sendeintervall in Sekunden für Sonden in der Höhe zwischen HEIGHT1 und HEIGHT2, z.B. 20
 * INTERVALL2 = Sendeintervall in Sekunden für Sonden in der Höhe zwischen HEIGHT2 und HEIGHT3, z.B. 10
 * INTERVALL3 = Häufiges Sendeintervall in Sekunden für Sonden unterhalb der Höhe von HEIGHT3, z.B. 5
+* EMAIL=Mailaddresse-nur-für-Sondehub-eintragen
 
 Beim Vorhandensein von SRTM Daten in ~/dxlAPRS/aprs/srtm1/ werden bei den 
 Parametern ALT* jeweils die Höhen über Grund zugrundegelegt.
@@ -504,6 +570,11 @@ Im grafischen Dateimanager muss ggf. erst die Option "Versteckte anzeigen"
 im Menü "Ansicht" aktiviert werden, damit man den Ordner ~/.config sieht.
 
 ===========================================================================
+
+Update 25.01.2026:
+* Optionale Nutzung von sondehub.org mit dxlAPRS-SHUE eingebaut
+* Muss in den Startskripten durch Einkommentieren aktiviert werden
+* Zusätzliche Angaben in der sondeconfig.txt notwendig
 
 Update 06.01.2026:
 * Geringfügige Text Anpassungen in den Skripten, README ergänzt.
